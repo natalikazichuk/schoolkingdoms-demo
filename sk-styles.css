@@ -1,0 +1,192 @@
+/* ============================================================
+   School Kingdoms — спільні стилі «денної» родини сторінок
+   Використовується: index.html, auth.html, login.html, parent.html
+   (hero.html має власну тему і цей файл НЕ підключає)
+   Підключати ПІСЛЯ шрифтів і ПЕРЕД сторінковим <style>,
+   щоб сторінка могла за потреби перекрити базу.
+   ============================================================ */
+
+/* ── Дизайн-токени ────────────────────────────────────────── */
+:root{
+  --navy:#13315f; --navy-d:#0c2247; --navy-l:#1e4d8b;
+  --green:#2c7a4b; --green-d:#1d5836;
+  --gold:#F2C75C; --gold-d:#C9942F; --gold-deep:#8a5e16;
+  --cream:#FBEFD0; --ink:#16315c;
+}
+
+/* ── База ─────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;position:relative;overflow-x:hidden}
+.hidden{display:none !important}
+
+/* ── Фон: небесна блакить + сонце + хмари ─────────────────── */
+.bg-fallback{position:fixed;inset:0;z-index:-3;
+  background:
+    linear-gradient(180deg,transparent 78%,#7cc35a 90%,#5fa84e 100%),
+    radial-gradient(120% 90% at 50% 0%,#9ad6f5 0%,#5aa3e6 45%,#2f74c8 100%)}
+/* «сонце» (клас .moon збережено задля сумісності з розміткою) */
+.moon{position:fixed;top:7%;right:9%;width:130px;height:130px;z-index:-2;border-radius:50%;
+  background:radial-gradient(circle at 42% 42%,#fff8d6 0%,#ffe27a 46%,rgba(255,226,122,0) 72%);
+  filter:blur(1px);opacity:.95;pointer-events:none}
+/* хмари (клас .stars збережено; тепер це шар хмар, що повільно пливуть) */
+.stars{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.stars::before,.stars::after{content:"";position:absolute;top:0;left:0;width:200%;height:100%;
+  background-repeat:repeat-x;
+  background-image:
+    radial-gradient(60px 24px at 140px 90px,rgba(255,255,255,.9),transparent 70%),
+    radial-gradient(90px 32px at 380px 150px,rgba(255,255,255,.85),transparent 72%),
+    radial-gradient(70px 26px at 660px 70px,rgba(255,255,255,.8),transparent 72%),
+    radial-gradient(110px 38px at 920px 170px,rgba(255,255,255,.82),transparent 72%);
+  animation:drift 70s linear infinite;opacity:.85}
+.stars::after{background-image:
+    radial-gradient(80px 28px at 220px 250px,rgba(255,255,255,.7),transparent 72%),
+    radial-gradient(120px 42px at 580px 300px,rgba(255,255,255,.65),transparent 72%),
+    radial-gradient(90px 32px at 1000px 230px,rgba(255,255,255,.7),transparent 72%);
+  animation-duration:110s;animation-delay:-25s;opacity:.6}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.stars::before,.stars::after{animation:none}}
+
+/* ── Стандартна шапка ───────────────────────────────────────
+   ЄДИНИЙ СТАНДАРТ ХЕДЕРА. Ті самі значення продубльовані в
+   sk-header.js (.sk-hd / .sk-hd__brand / .sk-hd__logo / .sk-hd__name /
+   .sk-hd__sub) — сторінки з sk-header.js не підключають цей файл.
+   Міняєш тут — міняй і там, інакше шапки розійдуться.
+   ---------------------------------------------------------- */
+.topbar{position:relative;z-index:20;display:flex;align-items:center;gap:14px 20px;
+  flex-wrap:wrap;justify-content:space-between;padding:10px 18px;
+  background:linear-gradient(180deg,#1e3a6b,#16294f);
+  border-bottom:3px solid #e0a42a;
+  box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.brand{display:flex;align-items:center;gap:11px;min-width:0;flex:0 1 auto;
+  text-decoration:none;color:#fff}
+.brand:hover .brand-name{filter:brightness(1.08)}
+.brand .crest{font-size:1.7rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+.brand-name{font-family:'Playfair Display',Georgia,serif;font-weight:900;line-height:1.05;
+  white-space:nowrap;font-size:clamp(1.05rem,3.4vw,1.5rem);color:#fff;
+  text-shadow:0 2px 5px rgba(0,0,0,.45)}
+.brand-name b{color:var(--gold)}
+.brand-sub{display:block;font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;
+  white-space:nowrap;color:#ffe9b8;font-weight:800;margin-top:3px}
+/* растровий логотип у бренді */
+.logo-img{width:clamp(86px,14vw,112px);height:auto;display:block;flex-shrink:0;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.4))}
+/* на телефоні бренд по центру — так само, як у sk-header.js */
+@media(max-width:640px){
+  .topbar{justify-content:center;text-align:center}
+}
+
+/* ── Картка авторизації ───────────────────────────────────── */
+.auth-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px 50px}
+.auth-card{width:100%;max-width:460px;border:2px solid rgba(242,199,92,.85);border-radius:24px;
+  padding:clamp(22px,4vw,32px);background:linear-gradient(165deg,rgba(39,81,140,.62),rgba(16,40,82,.7));
+  backdrop-filter:blur(10px) saturate(1.15);-webkit-backdrop-filter:blur(10px) saturate(1.15);
+  box-shadow:0 18px 44px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.16)}
+.auth-title{font-family:'Playfair Display',serif;font-weight:800;font-size:1.7rem;text-align:center;color:#FBEFD0;margin-bottom:4px}
+.auth-sub{text-align:center;color:#cdd9ef;font-weight:600;font-size:.92rem;margin-bottom:18px;line-height:1.4}
+
+/* ── Поля форми ───────────────────────────────────────────── */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.74rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#ffe9b8;margin-bottom:6px}
+.field input,.field select{width:100%;padding:13px 14px;border:1.5px solid rgba(242,199,92,.4);border-radius:13px;
+  background:rgba(8,20,42,.55);color:#fff;font-size:1rem;font-family:'Nunito',sans-serif;font-weight:600;transition:.15s}
+.field input::placeholder{color:#8ea3c4}
+.field input:focus,.field select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(242,199,92,.2)}
+.field select option{background:#0c2247;color:#fff}
+.field-row{display:flex;gap:12px}
+.field-row .field{flex:1}
+.pass-wrap{position:relative}
+.pass-wrap input{padding-right:46px}
+.pass-toggle{position:absolute;top:50%;right:8px;transform:translateY(-50%);width:34px;height:34px;
+  display:grid;place-items:center;border:none;background:transparent;cursor:pointer;border-radius:9px;
+  color:#cdd9ef;transition:.15s;padding:0}
+.pass-toggle:hover{color:#FBEFD0;background:rgba(242,199,92,.14)}
+.pass-toggle:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(242,199,92,.3)}
+.pass-toggle svg{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.hint{font-size:.76rem;color:#9fb2d2;font-weight:600;margin-top:5px;line-height:1.35}
+
+/* ── Кнопки ───────────────────────────────────────────────── */
+.btn{width:100%;padding:14px;border:none;border-radius:14px;font-family:'Nunito',sans-serif;font-weight:800;
+  font-size:1.02rem;cursor:pointer;transition:transform .15s,box-shadow .15s,filter .15s;margin-top:4px}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.6;cursor:default}
+.btn-gold{background:linear-gradient(180deg,#FFE7A0,#E0A93A);color:#5a3d08;border:2px solid var(--gold-d);
+  box-shadow:0 8px 18px rgba(216,159,34,.4)}
+.btn-gold:hover{filter:brightness(1.05)}
+.btn-blue{background:linear-gradient(180deg,#27518c,#16356a);color:#fff;border:2px solid var(--gold);
+  box-shadow:0 8px 18px rgba(0,0,0,.35)}
+.btn-blue:hover{filter:brightness(1.08)}
+
+/* ── Посилання / роздільник ───────────────────────────────── */
+.row-link{text-align:center;margin-top:14px}
+.link{background:none;border:none;color:#ffe9b8;font-family:'Nunito',sans-serif;font-weight:700;
+  font-size:.88rem;cursor:pointer;text-decoration:underline;padding:2px}
+.divider{display:flex;align-items:center;gap:12px;color:#9fb2d2;font-size:.78rem;font-weight:700;margin:18px 0 12px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:rgba(242,199,92,.3)}
+
+/* ── PIN ──────────────────────────────────────────────────── */
+.pin-label{text-align:center;font-size:.74rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#ffe9b8;margin:4px 0 8px}
+.pin-wrap{display:flex;gap:10px;justify-content:center;margin-bottom:8px}
+.pin-digit{width:52px;height:60px;text-align:center;font-size:1.7rem;font-weight:800;font-family:'Playfair Display',serif;
+  border:1.5px solid rgba(242,199,92,.45);border-radius:14px;background:rgba(8,20,42,.55);color:#fff;transition:.15s}
+.pin-digit:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(242,199,92,.22)}
+.pin-digit.filled{border-color:var(--gold);background:rgba(242,199,92,.12)}
+
+/* ── Тост ─────────────────────────────────────────────────── */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+  background:#0c2247;border:2px solid var(--gold);color:#fff;font-weight:700;padding:12px 20px;border-radius:14px;
+  box-shadow:0 10px 28px rgba(0,0,0,.5);transition:.25s;z-index:60;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Плитки-банери: ступені, класи, предмети ──────────────────
+   Одна плитка на трьох сторінках (navchannia.html, doshkillya.html,
+   tests.html): фон-картинка, затемнення, іконка, назва, підпис і смужка
+   прогресу. Розмір ОДНАКОВИЙ скрізь — раніше кожна сторінка тримала свою
+   копію стилів і вони розʼїхались: «клас» був вищий за «предмет».
+   Сітку вмикає .lvgrid (або .nv-grid — стара назва на двох сторінках).
+   Правки робити ТІЛЬКИ тут, не копіювати в сторінковий <style>. */
+.lvgrid,.nv-grid{display:grid;gap:clamp(12px,2.2vw,16px);
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.lvgrid .lv,.nv-grid .lv{position:relative;display:block;width:100%;text-align:left;
+  font-family:inherit;text-decoration:none;overflow:hidden;cursor:pointer;
+  border-radius:20px;aspect-ratio:16/10;min-height:170px;
+  border:2px solid rgba(242,199,92,.7);
+  background:linear-gradient(160deg,var(--g1,#27518c),var(--g2,#16356a));
+  box-shadow:0 12px 30px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
+  transition:transform .15s,box-shadow .15s,border-color .15s}
+.lvgrid .lv:hover:not(.locked),.nv-grid .lv:hover:not(.locked){transform:translateY(-3px);
+  border-color:var(--gold);box-shadow:0 18px 40px rgba(0,0,0,.5),0 0 22px -6px rgba(242,199,92,.6)}
+.lvgrid .lv.locked,.nv-grid .lv.locked{cursor:default;filter:grayscale(.25)}
+/* кадрування картинки: типово по центру; сторінка може зсунути через --lvpos */
+.lv-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  object-position:var(--lvpos,center);z-index:0}
+.lv-scrim{position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(8,18,40,.15) 0%,rgba(8,18,40,.35) 45%,rgba(8,18,40,.82) 100%)}
+.lv.locked .lv-scrim{background:linear-gradient(180deg,rgba(8,18,40,.35),rgba(8,18,40,.85))}
+.lv-body{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;
+  justify-content:flex-end;padding:14px 15px;text-align:left}
+.lv-ic{position:absolute;top:12px;left:14px;font-size:1.9rem;line-height:1;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.6))}
+.lv-name{font-family:'Playfair Display',serif;font-weight:900;color:#fff;
+  font-size:clamp(1.15rem,3.4vw,1.5rem);line-height:1.05;text-shadow:0 2px 8px rgba(0,0,0,.7)}
+/* .lv-sub — на navchannia, .lv-sub2 — на doshkillya й tests: один вигляд */
+.lv-sub,.lv-sub2{color:#ffe9b8;font-weight:800;font-size:.78rem;margin-top:2px;
+  text-shadow:0 1px 5px rgba(0,0,0,.7)}
+.lv-prog{display:flex;align-items:center;gap:9px;margin-top:9px}
+.lv-track{position:relative;flex:1 1 auto;height:9px;border-radius:999px;overflow:hidden;
+  background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.18)}
+.lv-track>i{display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,#7be0a4,#4bc47f);transition:width .5s ease}
+/* «усе пройдено» позначають по-різному: .full (navchannia) і data-full (решта) */
+.lv-track.full>i,.lv-track[data-full="1"]>i{background:linear-gradient(90deg,#ffe7a0,#f4c842)}
+.lv-ptx{flex:0 0 auto;color:#eaf1ff;font-weight:900;font-size:.8rem;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+.lv-soon{margin-top:9px;display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+  color:#e8eef9;font-weight:900;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
+  background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 12px}
+/* на телефоні — один стовпчик, трохи нижча плитка (але теж однакова скрізь) */
+@media(max-width:560px){
+  .lvgrid,.nv-grid{grid-template-columns:1fr;gap:12px}
+  .lvgrid .lv,.nv-grid .lv{aspect-ratio:16/9;min-height:150px}
+  .lv-body{padding:12px 14px}
+}

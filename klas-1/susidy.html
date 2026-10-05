@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Цифри-сусіди — Числовий ряд</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap&subset=cyrillic,cyrillic-ext,latin" rel="stylesheet">
+<style>
+/* Світла «пісочна» тема — як у тренажерах (замість темної sk-game.css). */
+:root{
+  --ink:#2c2b3a;--soft:#6b6a7d;--paper:#fff9ef;--line:#ece3d2;--card:#fff;
+  --red:#ff6b6b;--orange:#ffa94d;--yellow:#ffd43b;--green:#51cf66;--teal:#22b8cf;
+  --blue:#4dabf7;--purple:#cc5de8;
+  --good:#37b26f;--good-bg:#e4f7ec;--bad:#e06666;--bad-bg:#fbe7e7;
+  --shadow:0 6px 0 rgba(44,43,58,.13);
+  --gold:#ffcf4d;--gold-deep:#e0a92e;
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%; overflow:hidden;}
+body{
+  font-family:'Nunito',system-ui,sans-serif; color:var(--ink);
+  user-select:none; -webkit-user-select:none; touch-action:manipulation; overscroll-behavior:none;
+  background:
+    radial-gradient(circle at 12% 8%,rgba(255,212,59,.28),transparent 42%),
+    radial-gradient(circle at 88% 14%,rgba(77,171,247,.26),transparent 44%),
+    radial-gradient(circle at 78% 92%,rgba(204,93,232,.22),transparent 46%),
+    radial-gradient(circle at 8% 86%,rgba(81,207,102,.24),transparent 44%),
+    var(--paper);
+}
+h1,.title,.cta,.piece,.pill .val,.linkbtn{font-family:'Fredoka',sans-serif;letter-spacing:.3px;}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ── увесь ігровий шар — над футером ── */
+#wrap{position:fixed; top:0; left:0; right:0;
+  bottom:calc(60px + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; max-width:640px; margin:0 auto;}
+
+/* ── верхня панель ── */
+#top{display:flex; align-items:center; gap:8px;
+  padding:calc(env(safe-area-inset-top) + 12px) 14px 4px;}
+.iconbtn{width:44px; height:44px; border:2px solid var(--line); background:#fff; border-radius:14px;
+  font-family:inherit; font-weight:700; font-size:20px; color:var(--ink); cursor:pointer; flex:none;
+  display:grid; place-items:center; box-shadow:0 1px 3px rgba(44,43,58,.14);}
+.iconbtn:active{transform:translateY(2px);}
+.pill{background:#fff; border:2px solid var(--line); border-radius:14px;
+  padding:6px 12px; font-weight:800; font-size:14px; white-space:nowrap; box-shadow:var(--shadow);}
+.pill .lab{color:var(--soft); font-size:11px; display:block; line-height:1;}
+.pill .val{font-size:19px; line-height:1.15; color:var(--ink);}
+.pill.q .val{color:var(--orange);}
+#spacer{flex:1;}
+#menuBtn{cursor:pointer; font-family:'Fredoka'; font-weight:600; font-size:15px;
+  background:#fff; border:2px solid var(--line); color:var(--ink);
+  border-radius:14px; padding:9px 14px; box-shadow:var(--shadow); margin-right:52px;}
+#menuBtn:active{transform:translateY(2px); box-shadow:0 3px 0 rgba(44,43,58,.13);}
+
+/* ── прогрес ── */
+#barWrap{padding:10px 64px 2px 16px;}   /* праворуч — місце під «жучок» 🐞 */
+#bar{height:12px; border-radius:8px; background:#f0e7d6; overflow:hidden;}
+#barFill{height:100%; width:0%; border-radius:8px;
+  background:linear-gradient(90deg,var(--green),var(--teal)); transition:width .45s;}
+
+/* ── вулиця з будиночками ── */
+#rowWrap{flex:1 1 auto; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:14px; padding:6px 10px;}
+#hint{font-weight:800; font-size:15px; color:var(--soft); min-height:22px; text-align:center;}
+#hint b{color:var(--blue); font-family:'Fredoka'; font-weight:700;}
+
+#row{position:relative; display:flex; align-items:flex-end; justify-content:center;
+  gap:clamp(8px,3vw,18px); max-width:100%; padding-bottom:12px;}
+#row::after{content:""; position:absolute; left:0; right:0; bottom:0;
+  height:8px; border-radius:999px;
+  background:linear-gradient(90deg,rgba(255,169,77,0),rgba(255,169,77,.45),rgba(255,169,77,0));}
+
+.house{position:relative; z-index:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:2px;
+  width:clamp(76px,25vw,116px); height:clamp(86px,27vw,128px);
+  border-radius:0 0 18px 18px;
+  border:3px solid var(--line); border-top:none; background:#fff;
+  box-shadow:var(--shadow);}
+/* дах */
+.house::before{content:""; position:absolute; left:-6px; right:-6px; top:0;
+  height:clamp(18px,5.5vw,26px); transform:translateY(-100%);
+  background:linear-gradient(180deg,#ff8a7a,#e85d4f);
+  clip-path:polygon(50% 0%, 100% 100%, 0% 100%);}
+.house .ico{font-size:clamp(18px,5.4vw,26px); line-height:1;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));}
+.house .val{font-family:'Fredoka'; font-size:clamp(26px,8vw,40px); font-weight:700; line-height:1.05; color:var(--ink);}
+
+.house.center{border-color:var(--blue); background:#eef6ff;}
+.house.center::before{background:linear-gradient(180deg,#74bdf9,#3d8fd6);}
+
+.house.socket{border:3px dashed var(--orange); border-top:none; background:#fff6e6; box-shadow:none;
+  transition:box-shadow .15s, border-color .15s, background .2s, transform .2s;}
+.house.socket::before{opacity:.45;}
+.house.socket .ico{opacity:.35; filter:grayscale(.6);}
+.house.socket .val{color:var(--orange);}
+.house.socket.active::before{opacity:.8;}
+.house.socket.hot{background:#ffe9c7; box-shadow:0 0 0 4px rgba(255,169,77,.25); transform:translateY(-4px);}
+.house.socket.good{border-style:solid; border-color:var(--good); background:var(--good-bg);
+  box-shadow:0 4px 0 rgba(55,178,111,.25);}
+.house.socket.good::before{opacity:1; background:linear-gradient(180deg,#7be0a4,#37b26f);}
+.house.socket.good .ico{opacity:1; filter:none;}
+.house.socket.good .val{color:var(--good);}
+.house.socket.bad{animation:shake .34s;}
+.house.pop{animation:pop .34s;}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}
+  40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+
+/* ── лоток з цифрами ── */
+#tray{display:flex; align-items:center; justify-content:center; gap:clamp(6px,2.4vw,14px);
+  padding:8px 10px 18px; flex-wrap:wrap;}
+.piece{position:relative; cursor:grab; touch-action:none; font-weight:700;
+  width:clamp(52px,15.5vw,80px); height:clamp(52px,15.5vw,80px);
+  font-size:clamp(22px,6.6vw,36px); color:#4a3300;
+  background:linear-gradient(180deg,#FFE7A0,var(--gold-deep));
+  border:none; border-radius:18px; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 0 #c9922a, 0 8px 14px rgba(44,43,58,.18);
+  transition:transform .12s, box-shadow .12s; will-change:transform;}
+.piece::before{content:""; position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+  width:24px; height:15px; background:inherit; border-radius:50%;}
+.piece:active{cursor:grabbing;}
+.piece.dragging{transition:none; box-shadow:0 12px 22px rgba(44,43,58,.3); z-index:50; opacity:.96;}
+.piece.flyto{transition:transform .22s cubic-bezier(.3,.9,.3,1.2);}
+.piece.wrong{animation:shake .34s;}
+.piece.placed{opacity:0; transform:scale(.3); pointer-events:none;}
+
+/* ── оверлеї (старт / фінал) ── */
+.screen{position:absolute; inset:0; z-index:60; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center; padding:22px; gap:12px;
+  background:linear-gradient(180deg,#fff9ef,#fdf3e2);}
+.screen.hidden{display:none;}
+.crown{font-size:52px;}
+.title{font-size:30px; font-weight:700; color:var(--ink); line-height:1.1;}
+.sub{font-size:15px; font-weight:800; color:var(--soft); max-width:340px; line-height:1.5;}
+.sub b{color:var(--blue);}
+.stars{font-size:42px; letter-spacing:6px;}
+.cta{margin-top:4px; border:none; cursor:pointer; font-weight:700;
+  background:var(--green); color:#fff; font-size:20px; padding:15px 42px; border-radius:18px;
+  box-shadow:0 6px 0 #37a052;}
+.cta:active{transform:translateY(3px); box-shadow:0 3px 0 #37a052;}
+.linkbtn{cursor:pointer; font-weight:600; font-size:15px; text-decoration:none;
+  background:#fff; border:2px solid var(--line); color:var(--soft);
+  border-radius:14px; padding:11px 22px;}
+.linkbtn:active{transform:translateY(2px);}
+.winrow{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+
+/* ══ стартовий екран — вигляд як у тренажері «Вчимо літери» ══ */
+#startScreen{justify-content:flex-start; gap:11px; overflow-y:auto;
+  padding:calc(env(safe-area-inset-top) + 16px) 20px 16px;}
+#startScreen > *:not(.start-hero){flex-shrink:0;}
+#startScreen .start-head{position:relative; width:100%; max-width:540px; margin:0 auto;
+  display:flex; flex-direction:column; align-items:center;}
+#startScreen .start-top{position:absolute; top:22px; left:0; z-index:5;}
+.num-blocks{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:6px 0 2px;}
+.nb{position:relative; width:58px; height:58px; border-radius:16px; display:grid; place-items:center;
+  font-family:'Fredoka'; font-weight:700; font-size:30px; color:#fff; transform:rotate(var(--r));
+  box-shadow:0 6px 0 rgba(0,0,0,.14), inset 0 -5px 0 rgba(0,0,0,.12), inset 0 3px 0 rgba(255,255,255,.28);}
+.nb::after{content:attr(data-o); position:absolute; right:-8px; bottom:-8px; font-size:20px;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
+.nb:nth-child(1){background:var(--red);--r:-7deg}.nb:nth-child(2){background:var(--orange);--r:5deg}
+.nb:nth-child(3){background:var(--green);--r:-4deg}.nb:nth-child(4){background:var(--blue);--r:6deg}
+.nb:nth-child(5){background:var(--purple);--r:-5deg}
+#startScreen h1{font-family:'Comfortaa','Fredoka',sans-serif; font-weight:700; font-size:34px;
+  margin:8px 0 0; line-height:1.1; color:#1e3a6b;}
+.start-sub{color:var(--soft); font-weight:800; font-size:16px;}
+.rhyme{background:#fff; border:3px dashed #cdd8ea; border-radius:20px; padding:12px 18px;
+  font-style:italic; color:#3a5a8c; font-weight:800; max-width:400px; margin:0 auto;
+  box-shadow:0 1px 3px rgba(44,43,58,.14); line-height:1.4;}
+.start-hero{max-width:440px; width:100%; margin:0 auto; flex:1 1 auto; min-height:120px;
+  max-height:clamp(170px,40vh,380px); display:flex; align-items:center; justify-content:center; overflow:hidden;}
+.start-hero img{max-width:100%; max-height:100%; width:auto; height:auto; display:block;}
+.start-btns{display:flex; flex-direction:column; gap:10px; max-width:440px; margin:2px auto 0; width:100%;}
+.big-btn{border:none; border-radius:18px; padding:16px 20px; width:100%; cursor:pointer;
+  font-family:'Fredoka'; font-weight:700; font-size:20px; color:#fff;
+  background:var(--blue); box-shadow:0 6px 0 #2f8fd6;}
+.big-btn:active{transform:translateY(3px); box-shadow:0 3px 0 #2f8fd6;}
+/* «Нагороду отримано» — на старті замість віршика */
+.done-card{display:none; align-items:center; gap:12px; max-width:440px; width:100%; margin:0 auto; text-align:left;
+  background:linear-gradient(180deg,#fffdf4,#fff6df); border:3px solid #f4c842; border-radius:20px;
+  padding:10px 14px; box-shadow:0 0 0 3px #fff9e6;}
+.done-card.on{display:flex;}
+.done-card .dc-ic{font-size:30px; flex:none;}
+.done-card .dc-got{font-family:'Fredoka'; font-weight:700; font-size:15px; color:#8a5e16; line-height:1.2;}
+.done-card .dc-go{font-weight:800; font-size:12px; color:var(--soft); margin-top:3px; line-height:1.25;}
+@media (max-width:520px){
+  #startScreen .start-top{top:12px;}
+  .num-blocks{padding:0 48px; gap:6px;}
+  .nb{width:44px; height:44px; border-radius:12px; font-size:24px;}
+  .nb::after{font-size:16px; right:-6px; bottom:-6px;}
+}
+@media (max-width:380px){
+  .num-blocks{padding:0 46px; gap:5px;}
+  .nb{width:38px; height:38px; border-radius:11px; font-size:21px;}
+}
+@media (max-width:440px){
+  #startScreen{gap:8px; padding-left:16px; padding-right:16px;}
+  #startScreen h1{font-size:30px;}
+  .start-sub{font-size:14px;}
+  .rhyme{padding:9px 14px; font-size:14px; border-radius:16px;}
+  .big-btn{padding:13px 18px; font-size:18px;}
+}
+@media (max-height:640px){
+  #startScreen h1{font-size:28px;}
+  .start-hero{max-height:22vh;}
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="top">
+    <div class="pill q"><span class="lab">Питання</span><span class="val" id="qNum">1/20</span></div>
+    <div id="spacer"></div>
+    <button id="menuBtn">☰ Меню</button>
+  </div>
+
+  <div id="barWrap"><div id="bar"><div id="barFill"></div></div></div>
+
+  <div id="rowWrap">
+    <div id="hint">Знайди сусідів числа</div>
+    <div id="row"></div>
+  </div>
+
+  <div id="tray"></div>
+
+  <!-- start / menu -->
+  <div class="screen" id="startScreen">
+    <div class="start-head">
+      <div class="start-top">
+        <button class="iconbtn backbtn" type="button" title="Назад" aria-label="Назад">←</button>
+      </div>
+      <div class="num-blocks">
+        <div class="nb" data-o="🏠">5</div><div class="nb" data-o="🌸">6</div><div class="nb" data-o="⭐">7</div><div class="nb" data-o="🎈">8</div><div class="nb" data-o="🐝">9</div>
+      </div>
+      <h1>Цифри-сусіди</h1>
+    </div>
+    <p class="start-sub">Хто живе перед і після · числа від 1 до 19</p>
+    <p class="rhyme" id="startRhyme">Числа в ряд живуть, як в хаті, —<br>треба сусідів всіх пізнати!</p>
+    <div class="done-card" id="startDone">
+      <span class="dc-ic">🏆</span>
+      <div><div class="dc-got" id="doneGot">Цифри-сусіди пройдено!</div>
+        <div class="dc-go" id="doneGo">Вирушай за новими досягненнями!</div></div>
+    </div>
+
+    <div class="start-hero">
+      <img src="../img/tr/sysidy%20(1).webp" alt="" onerror="this.closest('.start-hero').style.display='none'">
+    </div>
+
+    <div class="start-btns">
+      <button class="big-btn" id="playBtn">Грати ▶</button>
+    </div>
+  </div>
+
+  <!-- win -->
+  <div class="screen hidden" id="winScreen">
+    <div class="crown">👑</div>
+    <div class="title" id="winTitle">Вулицю заселено!</div>
+    <div class="stars" id="winStars">⭐⭐⭐</div>
+    <div class="sub" id="winSub">Чудова робота!</div>
+    <div class="winrow">
+      <button class="cta" id="againBtn">↻ Ще раз</button>
+    </div>
+    <div class="winrow">
+      <button class="linkbtn" id="toMenuBtn" type="button">☰ У меню</button>
+      <button class="linkbtn backbtn" type="button">← Назад</button>
+    </div>
+  </div>
+</div>
+
+<script src="../sk-footer.js?v=5" data-base="../" data-back="self"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  var TOTAL = 20;          // питань у грі
+  var MIN = 1, MAX = 19;   // діапазон чисел на вулиці
+
+  // ── мешканці будиночків ──
+  var THEMES = ["⭐","❤️","🧁","🍎","🌸","🐝","🍄","🎈","🐟","🍓","🍪","🌟","🦋","🍋","🐞","🎀"];
+
+  var rowEl   = document.getElementById("row");
+  var trayEl  = document.getElementById("tray");
+  var hintEl  = document.getElementById("hint");
+  var qNumEl  = document.getElementById("qNum");
+  var fillEl  = document.getElementById("barFill");
+
+  /* ── «Назад» — туди, звідки прийшли (?skback= / попередня сторінка сайту), інакше «Тести» ── */
+  function goBack(){
+    if(window.skGoBackSmart){ skGoBackSmart("tests.html"); return; }
+    location.href="../index.html#tests";
+  }
+  function openMenu(){
+    refreshStart();
+    document.getElementById("winScreen").classList.add("hidden");
+    document.getElementById("startScreen").classList.remove("hidden");
+  }
+  document.querySelectorAll(".backbtn").forEach(function(b){ b.addEventListener("click", goBack); });
+  /* футер «Назад»: у грі → меню, у меню → вихід */
+  var hb=document.getElementById("heroBackBtn");
+  if(hb) hb.addEventListener("click", function(){
+    if(document.getElementById("startScreen").classList.contains("hidden")) openMenu();
+    else goBack();
+  });
+
+  /* ── нагорода з адмінки (sk-prize.js) — один раз, за перше повне проходження ── */
+  var PRIZE_KEY="sk_susidy_prize_v1";   // нагороду отримано (і що саме)
+  var TR_HREF="susidy.html";            // за цим іменем sk-rewards шукає нагороду з адмінки
+  function refreshStart(){
+    var p = window.SKPRIZE ? SKPRIZE.summary(PRIZE_KEY) : null;
+    document.getElementById("startDone").classList.toggle("on", !!p);
+    document.getElementById("startRhyme").style.display = p ? "none" : "";   // замість віршика — нагорода
+    if(!p) return;
+    var t=SKPRIZE.doneText(p, "Цифри-сусіди пройдено — нагороду отримано!");
+    document.getElementById("doneGot").textContent=t.got;
+    document.getElementById("doneGo").textContent=t.go;
+  }
+
+  var streak=0, qIndex=0, mistakes=0;
+  var current=null, locked=false, sockets=[];
+
+  function rnd(min,max){ return min + Math.floor(Math.random()*(max-min+1)); }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=rnd(0,i); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+
+  // ── генерація питання ──
+  function makeOptions(prev,next,center){
+    var set={}; var list=[prev,next];
+    set[prev]=1; set[next]=1; set[center]=1;      // центр не пропонуємо
+    var guard=0;
+    while(list.length<5 && guard++<300){
+      var d = rnd(1,3) * (Math.random()<0.5?-1:1);
+      var v = center + d;
+      if(v<MIN || v>MAX || set[v]) continue;
+      set[v]=1; list.push(v);
+    }
+    guard=0;
+    while(list.length<5 && guard++<300){
+      var w = rnd(MIN,MAX);
+      if(set[w]) continue;
+      set[w]=1; list.push(w);
+    }
+    shuffle(list);
+    return list;
+  }
+
+  var lastCenter=-1, lastTheme="";
+  function genQuestion(){
+    var center;
+    var guard=0;
+    do { center = rnd(MIN+1, MAX-1); } while(center===lastCenter && guard++<50);
+    var prev = center-1, next = center+1;
+
+    var theme;
+    do { theme = THEMES[rnd(0,THEMES.length-1)]; } while(theme===lastTheme && THEMES.length>1);
+
+    lastCenter=center; lastTheme=theme;
+    return { center:center, prev:prev, next:next, theme:theme,
+             options:makeOptions(prev,next,center) };
+  }
+
+  // ── рендер ──
+  function makeHouse(cls, icoTxt, valTxt){
+    var h=document.createElement("div");
+    h.className="house "+cls;
+    var ico=document.createElement("span"); ico.className="ico"; ico.textContent=icoTxt;
+    var val=document.createElement("span"); val.className="val"; val.textContent=valTxt;
+    h.appendChild(ico); h.appendChild(val);
+    return h;
+  }
+
+  function renderQuestion(){
+    current = genQuestion();
+    rowEl.innerHTML=""; sockets=[];
+
+    var left  = makeHouse("socket","🚪","?");
+    left.dataset.answer = current.prev;
+    var mid   = makeHouse("center", current.theme, current.center);
+    var right = makeHouse("socket","🚪","?");
+    right.dataset.answer = current.next;
+
+    rowEl.appendChild(left); rowEl.appendChild(mid); rowEl.appendChild(right);
+    sockets=[left,right];
+    markActive();
+
+    trayEl.innerHTML="";
+    current.options.forEach(function(val){
+      var p=document.createElement("button");
+      p.className="piece"; p.textContent=val;
+      p.dataset.val=val;
+      attachDrag(p);
+      trayEl.appendChild(p);
+    });
+
+    hintEl.innerHTML="Хто сусіди числа <b>"+current.center+"</b>?";
+    qNumEl.textContent=(qIndex+1)+"/"+TOTAL;
+    fillEl.style.width = Math.round(qIndex/TOTAL*100)+"%";
+    locked=false;
+  }
+
+  function openSockets(){
+    return sockets.filter(function(s){ return !s.classList.contains("good"); });
+  }
+  function markActive(){
+    var open=openSockets();
+    sockets.forEach(function(s){ s.classList.remove("active"); });
+    if(open.length) open[0].classList.add("active");
+  }
+
+  // ── взаємодія: перетягування + тап ──
+  function socketAt(x,y){
+    var pad=22, found=null;
+    openSockets().forEach(function(s){
+      var r=s.getBoundingClientRect();
+      if(x>=r.left-pad && x<=r.right+pad && y>=r.top-pad && y<=r.bottom+pad) found=s;
+    });
+    return found;
+  }
+
+  function attachDrag(p){
+    var startX=0, startY=0, dx=0, dy=0, moved=false, dragging=false, pid=null;
+
+    p.addEventListener("pointerdown", function(e){
+      if(locked) return;
+      dragging=true; moved=false; pid=e.pointerId;
+      startX=e.clientX; startY=e.clientY; dx=0; dy=0;
+      p.classList.add("dragging");
+      try{ p.setPointerCapture(pid); }catch(_){}
+    });
+
+    p.addEventListener("pointermove", function(e){
+      if(!dragging) return;
+      dx=e.clientX-startX; dy=e.clientY-startY;
+      if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
+      p.style.transform="translate("+dx+"px,"+dy+"px)";
+      var hot=socketAt(e.clientX,e.clientY);
+      sockets.forEach(function(s){ s.classList.toggle("hot", s===hot); });
+    });
+
+    function endDrag(e){
+      if(!dragging) return;
+      dragging=false;
+      try{ p.releasePointerCapture(pid); }catch(_){}
+      p.classList.remove("dragging");
+      sockets.forEach(function(s){ s.classList.remove("hot"); });
+
+      if(!moved){                                   // тап → у активний будиночок
+        var open=openSockets();
+        if(open.length) flyTo(p, open[0]);
+        return;
+      }
+      var target=socketAt(e.clientX, e.clientY);
+      if(target) resolve(p, target);
+      else returnPiece(p);
+    }
+    p.addEventListener("pointerup", endDrag);
+    p.addEventListener("pointercancel", endDrag);
+  }
+
+  function returnPiece(p){
+    p.classList.add("flyto"); p.style.transform="translate(0,0)";
+    setTimeout(function(){ p.classList.remove("flyto"); p.style.transform=""; }, 240);
+  }
+
+  function flyTo(p, target){
+    if(locked) return;
+    var pr=p.getBoundingClientRect(), sr=target.getBoundingClientRect();
+    var tx=(sr.left+sr.width/2)-(pr.left+pr.width/2);
+    var ty=(sr.top+sr.height/2)-(pr.top+pr.height/2);
+    p.classList.add("flyto");
+    p.style.transform="translate("+tx+"px,"+ty+"px)";
+    setTimeout(function(){ resolve(p, target); }, 210);
+  }
+
+  function resolve(p, target){
+    if(locked) return;
+    var correct = String(p.dataset.val) === String(target.dataset.answer);
+    if(correct){
+      p.classList.add("placed");
+      target.classList.remove("active","hot");
+      target.classList.add("good","pop");
+      target.querySelector(".val").textContent = target.dataset.answer;
+      target.querySelector(".ico").textContent = current.theme;
+      streak++;
+      buzz(20); chime();
+      markActive();
+
+      if(openSockets().length===0){                // обидва сусіди на місці
+        locked=true;
+        hintEl.innerHTML="Сусіди знайдені: <b>"+current.prev+"</b> і <b>"+current.next+"</b> 🎉";
+        qIndex++;
+        if(window.skReportProgress) skReportProgress(qIndex, TOTAL);   // найдалі за гру — для картки в «Навчанні»
+        fillEl.style.width = Math.round(qIndex/TOTAL*100)+"%";
+        if(qIndex>=TOTAL){ setTimeout(finish, 700); return; }
+        setTimeout(renderQuestion, 700);
+      } else {
+        hintEl.innerHTML="Тепер другий сусід числа <b>"+current.center+"</b>";
+      }
+    } else {
+      streak=0; mistakes++;
+      buzz([30,40,30]); thud();
+      p.classList.remove("flyto"); p.style.transform="";
+      p.classList.add("wrong");
+      target.classList.add("bad");
+      hintEl.textContent="Числа стоять по порядку — на 1 менше і на 1 більше 🤔";
+      setTimeout(function(){
+        p.classList.remove("wrong");
+        target.classList.remove("bad");
+        hintEl.innerHTML="Хто сусіди числа <b>"+current.center+"</b>?";
+      }, 950);
+    }
+  }
+
+  // ── звук ──
+  var actx=null;
+  function tone(f,d,type){ try{
+    if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+    var o=actx.createOscillator(), g=actx.createGain();
+    o.type=type||"triangle"; o.frequency.value=f; g.gain.value=0.06;
+    o.connect(g); g.connect(actx.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+d); o.stop(actx.currentTime+d+0.02);
+  }catch(e){} }
+  function chime(){ tone(660,0.09); setTimeout(function(){tone(880,0.11);},90); }
+  function thud(){ tone(180,0.16,"sine"); }
+  function fanfare(){ tone(523,0.12); setTimeout(function(){tone(659,0.12);},120);
+    setTimeout(function(){tone(784,0.14);},240); setTimeout(function(){tone(1046,0.18);},380); }
+  function buzz(v){ try{ if(navigator.vibrate) navigator.vibrate(v); }catch(e){} }
+
+  // ── фініш ──
+  function finish(){
+    fanfare();
+    var stars = mistakes===0 ? "⭐⭐⭐" : (mistakes<=3 ? "⭐⭐" : "⭐");
+    document.getElementById("winStars").textContent=stars;
+    document.getElementById("winTitle").textContent =
+      mistakes===0 ? "Бездоганно!" : "Вулицю заселено!";
+    document.getElementById("winSub").textContent =
+      "Пройдено "+TOTAL+" з "+TOTAL+" • Помилок: "+mistakes;
+    document.getElementById("winScreen").classList.remove("hidden");
+    // перше повне проходження → нагорода з адмінки (поп-ап + предмет в інвентар), один раз
+    if(window.SKPRIZE && !SKPRIZE.summary(PRIZE_KEY))
+      SKPRIZE.claim({key:PRIZE_KEY, href:TR_HREF, title:"Вулицю заселено!", onClose:refreshStart});
+  }
+
+  function startGame(){
+    streak=0; qIndex=0; mistakes=0;
+    lastCenter=-1; lastTheme="";
+    document.getElementById("startScreen").classList.add("hidden");
+    document.getElementById("winScreen").classList.add("hidden");
+    renderQuestion();
+  }
+
+  document.getElementById("playBtn").addEventListener("click", startGame);
+  document.getElementById("againBtn").addEventListener("click", startGame);
+  document.getElementById("menuBtn").addEventListener("click", openMenu);
+  document.getElementById("toMenuBtn").addEventListener("click", openMenu);
+
+  renderQuestion(); refreshStart();
+  window.addEventListener("load", refreshStart);   // sk-prize.js підключено нижче
+})();
+</script>
+<script type="module" src="../firebase-config.js"></script>
+<script src="../sk-items.js?v=2"></script>
+<script src="../sk-curriculum.js?v=8"></script>
+<script src="../sk-rewards.js?v=3"></script>
+<script src="../sk-prize.js?v=1"></script>
+<script src="../sk-finish.js?v=6"></script>
+</body>
+</html>
